@@ -1,0 +1,31 @@
+name: MacRDP
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: MacRDP
+    runs-on: macos-latest
+
+    steps:
+    - name: Enabling Remote Access
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      run: |
+        curl -s -o start.sh -L "https://raw.githubusercontent.com/JohnnyNetsec/github-vm/main/mac/start.sh"
+        chmod +x start.sh
+        bash start.sh "$NGROK_AUTH_TOKEN"
+
+    - name: Log In Details To VNC Server
+      run: |
+        chmod +x login.sh
+        bash login.sh
+
+    - name: MacOS System running...
+      uses: mxschmitt/action-tmate@v2
+
+    - name: Show ngrok endpoint (RDP IP)
+      run: |
+        brew install jq
+        sleep 10
+        curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url'
